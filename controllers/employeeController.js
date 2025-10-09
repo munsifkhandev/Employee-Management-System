@@ -88,7 +88,27 @@ const loginEmployee = async (req, res) => {
   }
 };
 
+const getMyProfile = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.employee.id).select(
+      "-password"
+    );
+    return res.status(200).json({
+      success: true,
+      data: employee,
+      message: "Here is your Profile",
+    });
+  } catch (error) {
+    console.error("Error in getMyProfile:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error..",
+    });
+  }
+};
+
 module.exports = {
   registerEmployee,
   loginEmployee,
+  getMyProfile,
 };
