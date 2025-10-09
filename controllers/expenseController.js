@@ -31,6 +31,24 @@ const addExpense = async (req, res) => {
   }
 };
 
+const getMyExpense = async (req, res) => {
+  try {
+    const myExpenses = await Expense.find({ employee: req.employee.id });
+    return res.status(200).json({
+      success: true,
+      data: myExpenses,
+      message: "Successfully Fetched Details.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error Fetching Your Details",
+    });
+  }
+};
+
 module.exports = {
   addExpense,
+  getMyExpense,
 };
