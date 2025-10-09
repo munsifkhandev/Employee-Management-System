@@ -101,13 +101,50 @@ const deleteExpense = async (req, res) => {
   }
 };
 
+const getMySummary = async (req, res) => {
+  try {
+    const summary = await Expense.aggregate([
+      { $match: { employee: new mongoose.Types.ObjectId(req.employee.id) } },
+      {
+        $facet: {
+          byCategory: [
+            {
+              $group: {
+                _id: "$category",
+                totalAmount: { $sum: "$amount" },
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          overallTotal: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: { $sum: "$amount" },
+                count: { $sum: 1 },
+              },
+            },
+          ],
+        },
+      },
+    ]);
 
-
-
+    return res.status(200).json({
+      success: false,
+      data: summary,
+      message: "Here is yourr Expense Summary..",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Error fetching summary: " + error.message });
+  }
+};
 
 module.exports = {
   addExpense,
   getMyExpense,
   updateExpense,
   deleteExpense,
+  getMySummary,
 };
