@@ -1,5 +1,5 @@
 const Expense = require("../models/Expense");
-
+const mongoose = require("mongoose");
 const addExpense = async (req, res) => {
   try {
     const { category, amount, description, date, voucherNumber, modeOfTravel } =
@@ -48,7 +48,66 @@ const getMyExpense = async (req, res) => {
   }
 };
 
+const updateExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+    if (!expense) {
+      return res.status(400).json({
+        success: false,
+        message: "No Expense , Please Add the Expense First.. ",
+      });
+    }
+    if (expense.employee.toString() !== req.employee.id) {
+      return res.status(401).json({
+        success: false,
+        message: "User not Authorize..",
+      });
+    }
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Expense Updated Successfullyy...",
+    });
+  } catch (error) {
+    console.error("Error during expense update:", error); // <-- ADD THIS LINE
+
+    return res.status(500).json({
+      success: false,
+      message: "Expense Updataion Failed...",
+    });
+  }
+};
+
+const deleteExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) {
+      return res.status(404).json({ error: "Expense not found." });
+    }
+
+    if (expense.employee.toString() !== req.employee.id) {
+      return res.status(401).json({ error: "User not authorized." });
+    }
+
+    await Expense.findByIdAndDelete(req.params.id);
+    res.json({ message: "Expense removed successfully." });
+  } catch (error) {
+    res.status(500).json({ error: "Error deleting expense: " + error.message });
+  }
+};
+
+
+
+
+
 module.exports = {
   addExpense,
   getMyExpense,
+  updateExpense,
+  deleteExpense,
 };
