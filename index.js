@@ -1,5 +1,8 @@
 const express = require("express");
 const connectDB = require("./config/db");
+
+const employeeRoutes = require("./routes/employeeRoutes");
+
 require("dotenv").config();
 connectDB();
 
@@ -14,6 +17,8 @@ app.get("/", (req, res) => {
     "Congrats your Expense Management System API is working Perfectly.."
   );
 });
+
+app.use("/api/employee", employeeRoutes);
 
 app.listen(PORT, () => {
   console.log(`App is running on http://localhost:${PORT}`);
