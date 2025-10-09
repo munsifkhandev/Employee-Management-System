@@ -2,8 +2,8 @@ const express = require("express");
 const connectDB = require("./config/db");
 
 const employeeRoutes = require("./routes/employeeRoutes");
-
 const expenseRoutes = require("./routes/expenseRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 require("dotenv").config();
 connectDB();
@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/employees", employeeRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.listen(PORT, () => {
   console.log(`App is running on http://localhost:${PORT}`);
