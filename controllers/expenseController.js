@@ -73,7 +73,7 @@ const updateExpense = async (req, res) => {
       message: "Expense Updated Successfullyy...",
     });
   } catch (error) {
-    console.error("Error during expense update:", error); // <-- ADD THIS LINE
+    console.error("Error during expense update:", error);
 
     return res.status(500).json({
       success: false,
@@ -130,7 +130,7 @@ const getMySummary = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      success: false,
+      success: true,
       data: summary,
       message: "Here is yourr Expense Summary..",
     });
