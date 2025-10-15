@@ -14,6 +14,7 @@ const handleChatCommand = async (req, res) => {
 
   The possible intents are:
   - "add_expense"
+  - "add_bulk_expenses"
   - "get_my_expenses"
   - "get_summary"
   - "update_expense_by_voucher"
@@ -27,20 +28,23 @@ const handleChatCommand = async (req, res) => {
   3. For "update_expense_by_description", you MUST extract a "search_term" and an "update_data" object.
   4. For "delete_expense_by_voucher", you MUST extract the "voucherNumber".
   5. Your response MUST be ONLY the JSON object and nothing else.
-
+  6. For "add_bulk_expenses", you MUST extract an "expenses" array of objects.
+  Follow these rules STRICTLY:
   Example 1 (Add):
   User: "I spent 1200 on dinner"
   JSON: { "intent": "add_expense", "data": { "amount": 1200, "category": "Food", "description": "dinner" } }
-
-  Example 2 (Update by Voucher):
+  Example 2 (Add Bulk):
+  User: "I have two expenses: 500 for food and 300 for transport"
+  JSON: { "intent": "add_bulk_expenses", "expenses": [ { "amount": 500, "category": "Food" }, { "amount": 300, "category": "Transport" } ] }
+  Example 3 (Update by Voucher):
   User: "Update expense with voucher V-101 and set amount to 1500"
   JSON: { "intent": "update_expense_by_voucher", "voucherNumber": "V-101", "data": { "amount": 1500 } }
 
-  Example 3 (Update by Description):
+  Example 4 (Update by Description):
   User: "change my expense at imtiaz to 4500"
   JSON: { "intent": "update_expense_by_description", "search_term": "imtiaz", "update_data": { "amount": 4500 } }
   
-  Example 4 (Delete):
+  Example 5 (Delete):
   User: "delete expense with voucher V-101"
   JSON: { "intent": "delete_expense_by_voucher", "voucherNumber": "V-101" }`;
 
@@ -72,7 +76,32 @@ const handleChatCommand = async (req, res) => {
           data: savedExpense,
         });
         break;
+      case "add_bulk_expenses":
+        const expensesToAdd = action.expenses;
 
+        if (!expensesToAdd || expensesToAdd.length === 0) {
+          return res.json({
+            reply: "Sorry, I couldn't find any expenses in your command.",
+          });
+        }
+
+        const expensesWithEmployeeId = expensesToAdd.map((expense) => ({
+          ...expense,
+          employee: employeeId,
+        }));
+
+        const savedExpenses = await Expense.insertMany(expensesWithEmployeeId);
+
+        const totalSum = savedExpenses.reduce(
+          (sum, expense) => sum + expense.amount,
+          0
+        );
+
+        res.json({
+          reply: `I've successfully added ${savedExpenses.length} new expenses for you. The total amount is ${totalSum}.`,
+          data: savedExpenses,
+        });
+        break;
       case "get_my_expenses":
         const expenses = await Expense.find({ employee: employeeId });
         res.json({ reply: "Here are your expenses:", data: expenses });

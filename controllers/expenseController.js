@@ -141,10 +141,46 @@ const getMySummary = async (req, res) => {
   }
 };
 
+const addBulkExpenses = async (req, res) => {
+  try {
+    const { expenses } = req.body;
+    const employeeId = req.employee.id;
+
+    if (!expenses || expenses.length === 0) {
+      return res.status(400).json({ error: "Expenses array is required." });
+    }
+
+    const expensesWithEmployeeId = expenses.map((expense) => ({
+      ...expense,
+      employee: employeeId,
+    }));
+
+    const savedExpenses = await Expense.insertMany(expensesWithEmployeeId);
+
+    const totalSum = savedExpenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: `${savedExpenses.length} expenses added successfully.`,
+      totalSum: totalSum,
+      data: savedExpenses,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error adding bulk expenses: " + error.message,
+    });
+  }
+};
+
 module.exports = {
   addExpense,
   getMyExpense,
   updateExpense,
   deleteExpense,
   getMySummary,
+  addBulkExpenses,
 };
